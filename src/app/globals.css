@@ -1,26 +1,168 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --foreground: 15, 23, 42;
+  --background: 255, 255, 255;
+  --card-bg: 255, 255, 255;
+  --border: 226, 232, 240;
+  --primary: 14, 165, 233;
+  --primary-foreground: 255, 255, 255;
+  --muted: 241, 245, 249;
+  --muted-foreground: 100, 116, 139;
+  --success: 34, 197, 94;
+  --error: 239, 68, 68;
+  --warning: 234, 179, 8;
+  --accent: 99, 102, 241;
+  --accent-foreground: 255, 255, 255;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dark {
+  --foreground: 248, 250, 252;
+  --background: 15, 23, 42;
+  --card-bg: 30, 41, 59;
+  --border: 51, 65, 85;
+  --primary: 56, 189, 248;
+  --primary-foreground: 255, 255, 255;
+  --muted: 51, 65, 85;
+  --muted-foreground: 148, 163, 184;
+  --success: 74, 222, 128;
+  --error: 248, 113, 113;
+  --warning: 250, 204, 21;
+  --accent: 129, 140, 248;
+  --accent-foreground: 255, 255, 255;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    @apply bg-[rgb(var(--background))] text-[rgb(var(--foreground))] antialiased;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .card {
+    @apply bg-[rgb(var(--card-bg))] rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-[rgb(var(--border))] backdrop-blur-sm hover:scale-[1.01] hover:border-[rgb(var(--primary))]/20;
+  }
+
+  .input-field {
+    @apply w-full rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--card-bg))] text-[rgb(var(--foreground))] px-4 py-2 focus:border-[rgb(var(--primary))] focus:ring-2 focus:ring-[rgb(var(--primary))/20] transition-all duration-200 placeholder:text-[rgb(var(--muted-foreground))] hover:border-[rgb(var(--primary))]/50;
+  }
+
+  .btn-primary {
+    @apply w-full bg-[rgb(var(--primary))] text-[rgb(var(--primary-foreground))] py-3 px-4 rounded-lg hover:bg-[rgb(var(--primary))/90] focus:outline-none focus:ring-2 focus:ring-[rgb(var(--primary))/50] focus:ring-offset-2 transition-all duration-200 font-medium shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  .btn-secondary {
+    @apply w-full bg-[rgb(var(--muted))] text-[rgb(var(--foreground))] py-3 px-4 rounded-lg hover:bg-[rgb(var(--muted))/90] focus:outline-none focus:ring-2 focus:ring-[rgb(var(--muted))/50] focus:ring-offset-2 transition-all duration-200 font-medium hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  .btn-accent {
+    @apply w-full bg-[rgb(var(--accent))] text-[rgb(var(--accent-foreground))] py-3 px-4 rounded-lg hover:bg-[rgb(var(--accent))/90] focus:outline-none focus:ring-2 focus:ring-[rgb(var(--accent))/50] focus:ring-offset-2 transition-all duration-200 font-medium shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  .heading-1 {
+    @apply text-4xl font-bold tracking-tight bg-gradient-to-r from-[rgb(var(--primary))] to-[rgb(var(--accent))] bg-clip-text text-transparent;
+  }
+
+  .heading-2 {
+    @apply text-2xl font-semibold tracking-tight;
+  }
+
+  .heading-3 {
+    @apply text-xl font-medium tracking-tight;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-all duration-200;
+  }
+
+  .badge-primary {
+    @apply bg-[rgb(var(--primary))/10] text-[rgb(var(--primary))] hover:bg-[rgb(var(--primary))/20];
+  }
+
+  .badge-success {
+    @apply bg-[rgb(var(--success))/10] text-[rgb(var(--success))] hover:bg-[rgb(var(--success))/20];
+  }
+
+  .badge-error {
+    @apply bg-[rgb(var(--error))/10] text-[rgb(var(--error))] hover:bg-[rgb(var(--error))/20];
+  }
+
+  .badge-warning {
+    @apply bg-[rgb(var(--warning))/10] text-[rgb(var(--warning))] hover:bg-[rgb(var(--warning))/20];
+  }
+
+  .badge-accent {
+    @apply bg-[rgb(var(--accent))/10] text-[rgb(var(--accent))] hover:bg-[rgb(var(--accent))/20];
+  }
+
+  .divider {
+    @apply border-t border-[rgb(var(--border))] my-4;
+  }
+
+  .glass-effect {
+    @apply bg-[rgb(var(--card-bg))/80] backdrop-blur-sm border border-[rgb(var(--border))] shadow-lg;
+  }
+
+  .glass-card {
+    @apply glass-effect rounded-xl p-6 hover:shadow-xl transition-all duration-300;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-blob {
+    animation: blob 7s infinite;
+  }
+
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
 }
