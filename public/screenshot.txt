@@ -1,0 +1,10 @@
+Finance Manager Screenshot
+
+This is a placeholder for the application screenshot.
+In a real project, you would replace this with an actual screenshot image of your application.
+
+To take a screenshot:
+1. Run the application
+2. Open it in your browser
+3. Use your operating system's screenshot tool (e.g., Windows: Win+Shift+S, macOS: Cmd+Shift+4)
+4. Save the image as screenshot.png in the public directory 
