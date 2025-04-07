@@ -1,0 +1,496 @@
+"use client";
+
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { useState } from "react";
+import { Transaction } from "./Dashboard";
+
+type ReportType = "summary" | "detailed" | "categories";
+type ReportPeriod = "current" | "month" | "year";
+
+type ReportGeneratorProps = {
+  transactions: Transaction[];
+  filteredTransactions: Transaction[];
+};
+
+export default function ReportGenerator({
+  transactions,
+  filteredTransactions,
+}: ReportGeneratorProps) {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [reportType, setReportType] = useState<ReportType>("summary");
+  const [reportPeriod, setReportPeriod] = useState<ReportPeriod>("current");
+
+  const generateReport = async () => {
+    setIsGenerating(true);
+
+    try {
+      // Get the correct data based on the period
+      const dataToUse =
+        reportPeriod === "current"
+          ? filteredTransactions
+          : reportPeriod === "month"
+          ? filterTransactionsByMonth(transactions)
+          : filterTransactionsByYear(transactions);
+
+      // Prepare the data for the report
+      const totalIncome = dataToUse
+        .filter((t) => t.type === "income")
+        .reduce((sum, t) => sum + t.amount, 0);
+
+      const totalExpenses = dataToUse
+        .filter((t) => t.type === "expense")
+        .reduce((sum, t) => sum + t.amount, 0);
+
+      // Group expenses by category
+      const categorySummary = dataToUse
+        .filter((t) => t.type === "expense")
+        .reduce((acc, t) => {
+          if (!acc[t.category]) acc[t.category] = 0;
+          acc[t.category] += t.amount;
+          return acc;
+        }, {} as Record<string, number>);
+
+      // Initialize PDF document
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.width;
+
+      // Add report title
+      const title = getReportTitle();
+      doc.setFontSize(20);
+      doc.setTextColor(41, 128, 185); // Blue color for title
+      doc.text(title, pageWidth / 2, 20, { align: "center" });
+
+      // Add report subtitle (period)
+      const periodText = getPeriodText();
+      doc.setFontSize(12);
+      doc.setTextColor(100, 100, 100); // Gray color for subtitle
+      doc.text(periodText, pageWidth / 2, 30, { align: "center" });
+
+      // Add generation date
+      const dateGenerated = `Generated on: ${new Date().toLocaleString()}`;
+      doc.setFontSize(10);
+      doc.text(dateGenerated, pageWidth / 2, 38, { align: "center" });
+
+      // Add report content based on report type
+      if (reportType === "summary") {
+        generateSummaryReport(doc, dataToUse, totalIncome, totalExpenses);
+      } else if (reportType === "detailed") {
+        generateDetailedReport(doc, dataToUse, totalIncome, totalExpenses);
+      } else if (reportType === "categories") {
+        generateCategoriesReport(doc, categorySummary, totalExpenses);
+      }
+
+      // Add footer with page numbers
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(10);
+        doc.setTextColor(150, 150, 150);
+        doc.text(
+          `Page ${i} of ${pageCount}`,
+          pageWidth / 2,
+          doc.internal.pageSize.height - 10,
+          { align: "center" }
+        );
+      }
+
+      // Save the PDF file
+      const fileName = `finance_report_${reportType}_${
+        new Date().toISOString().split("T")[0]
+      }.pdf`;
+      doc.save(fileName);
+
+      setTimeout(() => {
+        setIsGenerating(false);
+      }, 1500);
+    } catch (error) {
+      console.error("Error generating report:", error);
+      setIsGenerating(false);
+    }
+  };
+
+  // Helper function to filter transactions by current month
+  const filterTransactionsByMonth = (data: Transaction[]) => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    return data.filter((transaction) => {
+      const transactionDate = new Date(transaction.date);
+      return (
+        transactionDate.getMonth() === currentMonth &&
+        transactionDate.getFullYear() === currentYear
+      );
+    });
+  };
+
+  // Helper function to filter transactions by current year
+  const filterTransactionsByYear = (data: Transaction[]) => {
+    const currentYear = new Date().getFullYear();
+
+    return data.filter((transaction) => {
+      const transactionDate = new Date(transaction.date);
+      return transactionDate.getFullYear() === currentYear;
+    });
+  };
+
+  // Helper function to get the report title
+  const getReportTitle = () => {
+    switch (reportType) {
+      case "summary":
+        return "Financial Summary Report";
+      case "detailed":
+        return "Detailed Transaction Report";
+      case "categories":
+        return "Category Analysis Report";
+      default:
+        return "Financial Report";
+    }
+  };
+
+  // Helper function to get the period text
+  const getPeriodText = () => {
+    switch (reportPeriod) {
+      case "current":
+        return `Current Filter (${filteredTransactions.length} transactions)`;
+      case "month":
+        return `This Month (${
+          filterTransactionsByMonth(transactions).length
+        } transactions)`;
+      case "year":
+        return `This Year (${
+          filterTransactionsByYear(transactions).length
+        } transactions)`;
+      default:
+        return "All Transactions";
+    }
+  };
+
+  // Generate a summary report
+  const generateSummaryReport = (
+    doc: jsPDF,
+    data: Transaction[],
+    totalIncome: number,
+    totalExpenses: number
+  ) => {
+    const balance = totalIncome - totalExpenses;
+
+    // Add summary table
+    autoTable(doc, {
+      startY: 50,
+      head: [["Metric", "Value"]],
+      body: [
+        ["Total Transactions", data.length.toString()],
+        ["Total Income", `$${totalIncome.toFixed(2)}`],
+        ["Total Expenses", `$${totalExpenses.toFixed(2)}`],
+        ["Current Balance", `$${balance.toFixed(2)}`],
+      ],
+      headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+      alternateRowStyles: { fillColor: [240, 240, 240] },
+      footStyles: { fillColor: [41, 128, 185], textColor: 255 },
+    });
+
+    // Add a pie chart description (in a real implementation, you would add an actual chart)
+    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Financial Overview", 20, doc.autoTable.previous.finalY + 20);
+
+    doc.setFontSize(11);
+    doc.text(
+      `Your total income is $${totalIncome.toFixed(2)}`,
+      20,
+      doc.autoTable.previous.finalY + 30
+    );
+    doc.text(
+      `Your total expenses are $${totalExpenses.toFixed(2)}`,
+      20,
+      doc.autoTable.previous.finalY + 40
+    );
+
+    const balanceText =
+      balance >= 0
+        ? `You have a positive balance of $${balance.toFixed(2)}`
+        : `You have a negative balance of $${Math.abs(balance).toFixed(2)}`;
+
+    doc.text(balanceText, 20, doc.autoTable.previous.finalY + 50);
+
+    // Add savings rate if there's income
+    if (totalIncome > 0) {
+      const savingsRate = ((totalIncome - totalExpenses) / totalIncome) * 100;
+      doc.text(
+        `Your savings rate is ${Math.max(0, savingsRate).toFixed(1)}%`,
+        20,
+        doc.autoTable.previous.finalY + 60
+      );
+    }
+  };
+
+  // Generate a detailed transactions report
+  const generateDetailedReport = (
+    doc: jsPDF,
+    data: Transaction[],
+    totalIncome: number,
+    totalExpenses: number
+  ) => {
+    // Add summary section
+    const balance = totalIncome - totalExpenses;
+
+    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Financial Summary", 20, 50);
+
+    doc.setFontSize(11);
+    doc.text(`Total Income: $${totalIncome.toFixed(2)}`, 20, 60);
+    doc.text(`Total Expenses: $${totalExpenses.toFixed(2)}`, 20, 68);
+    doc.text(`Balance: $${balance.toFixed(2)}`, 20, 76);
+
+    // Add transactions table
+    const sortedTransactions = [...data].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+
+    const tableData = sortedTransactions.map((t) => [
+      new Date(t.date).toLocaleDateString(),
+      t.description,
+      t.category,
+      t.type === "income" ? "Income" : "Expense",
+      `$${t.amount.toFixed(2)}`,
+    ]);
+
+    autoTable(doc, {
+      startY: 90,
+      head: [["Date", "Description", "Category", "Type", "Amount"]],
+      body: tableData,
+      headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+      alternateRowStyles: { fillColor: [240, 240, 240] },
+      // Style income rows differently
+      didDrawCell: (data) => {
+        if (
+          data.section === "body" &&
+          data.column.index === 3 &&
+          data.cell.raw === "Income"
+        ) {
+          // This is an income row, could apply custom styling if needed
+        }
+      },
+    });
+  };
+
+  // Generate a categories report
+  const generateCategoriesReport = (
+    doc: jsPDF,
+    categorySummary: Record<string, number>,
+    totalExpenses: number
+  ) => {
+    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Expense Categories Analysis", 20, 50);
+
+    doc.setFontSize(11);
+    doc.text(`Total Expenses: $${totalExpenses.toFixed(2)}`, 20, 60);
+
+    // Convert category data to sorted array
+    const categoryItems = Object.entries(categorySummary)
+      .map(([category, amount]) => ({
+        category,
+        amount,
+        percentage:
+          totalExpenses > 0 ? Math.round((amount / totalExpenses) * 100) : 0,
+      }))
+      .sort((a, b) => b.amount - a.amount);
+
+    // Generate the table data
+    const tableData = categoryItems.map((item) => [
+      item.category,
+      `$${item.amount.toFixed(2)}`,
+      `${item.percentage}%`,
+    ]);
+
+    // Add the categories table
+    autoTable(doc, {
+      startY: 70,
+      head: [["Category", "Amount", "Percentage"]],
+      body: tableData,
+      headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+      alternateRowStyles: { fillColor: [240, 240, 240] },
+    });
+
+    // Add a note about top expenses
+    if (categoryItems.length > 0) {
+      doc.setFontSize(14);
+      doc.text("Top Spending Insights", 20, doc.autoTable.previous.finalY + 20);
+
+      doc.setFontSize(11);
+      const topCategory = categoryItems[0];
+      doc.text(
+        `Your highest spending category is "${
+          topCategory.category
+        }" at $${topCategory.amount.toFixed(2)} (${
+          topCategory.percentage
+        }% of total expenses)`,
+        20,
+        doc.autoTable.previous.finalY + 30,
+        { maxWidth: 170 }
+      );
+
+      // Add insights for the top 3 categories
+      if (categoryItems.length >= 3) {
+        doc.text(
+          `Your top 3 categories represent ${categoryItems
+            .slice(0, 3)
+            .reduce(
+              (sum, item) => sum + item.percentage,
+              0
+            )}% of your total expenses.`,
+          20,
+          doc.autoTable.previous.finalY + 50
+        );
+      }
+    }
+  };
+
+  return (
+    <div className="glass-card mb-8">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[rgb(var(--accent))]/10">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="rgb(var(--accent))"
+            className="w-5 h-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+            />
+          </svg>
+        </div>
+        <h2 className="heading-2">Download PDF Reports</h2>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div>
+          <label className="block text-sm font-medium text-[rgb(var(--muted-foreground))] mb-2">
+            Report Type
+          </label>
+          <select
+            value={reportType}
+            onChange={(e) => setReportType(e.target.value as ReportType)}
+            className="input-field"
+            disabled={isGenerating}
+          >
+            <option value="summary">Summary Report</option>
+            <option value="detailed">Detailed Transactions</option>
+            <option value="categories">Category Analysis</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-[rgb(var(--muted-foreground))] mb-2">
+            Time Period
+          </label>
+          <select
+            value={reportPeriod}
+            onChange={(e) => setReportPeriod(e.target.value as ReportPeriod)}
+            className="input-field"
+            disabled={isGenerating}
+          >
+            <option value="current">Current Filter</option>
+            <option value="month">This Month</option>
+            <option value="year">This Year</option>
+          </select>
+        </div>
+
+        <div className="flex items-end">
+          <button
+            onClick={generateReport}
+            disabled={isGenerating}
+            className={`btn-accent flex items-center justify-center gap-2 ${
+              isGenerating ? "opacity-70" : ""
+            }`}
+          >
+            {isGenerating ? (
+              <>
+                <svg
+                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Generating PDF...
+              </>
+            ) : (
+              <>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-5 h-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+                  />
+                </svg>
+                Download PDF
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-[rgb(var(--muted))]/10 rounded-lg p-4 text-sm">
+        <h3 className="font-medium mb-2 text-[rgb(var(--foreground))]">
+          {reportType === "summary" && "Summary Report"}
+          {reportType === "detailed" && "Detailed Transaction Report"}
+          {reportType === "categories" && "Category Analysis Report"}
+        </h3>
+
+        <p className="text-[rgb(var(--muted-foreground))]">
+          {reportType === "summary" &&
+            "Download a professional PDF with a high-level summary of your income, expenses, and balance."}
+          {reportType === "detailed" &&
+            "Export a comprehensive PDF report of all your transactions with dates, amounts, and categories."}
+          {reportType === "categories" &&
+            "Analyze your spending patterns with a PDF breakdown of expenses by category with visual insights."}
+        </p>
+
+        <div className="divider"></div>
+
+        <p className="text-[rgb(var(--muted-foreground))]">
+          {reportPeriod === "current" &&
+            `This report will include data from ${filteredTransactions.length} transactions based on your current filter.`}
+          {reportPeriod === "month" &&
+            `This report will include all transactions from the current month (${
+              filterTransactionsByMonth(transactions).length
+            } transactions).`}
+          {reportPeriod === "year" &&
+            `This report will include all transactions from the current year (${
+              filterTransactionsByYear(transactions).length
+            } transactions).`}
+        </p>
+      </div>
+    </div>
+  );
+}

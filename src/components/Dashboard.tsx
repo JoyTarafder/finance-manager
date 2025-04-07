@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import DashboardOverview from "./DashboardOverview";
 import Header from "./Header";
+import ReportGenerator from "./ReportGenerator";
 import Summary from "./Summary";
 import TransactionFilters from "./TransactionFilters";
 import TransactionForm from "./TransactionForm";
@@ -91,6 +92,14 @@ export default function Dashboard() {
       {/* Dashboard Overview Section */}
       {isClient && (
         <DashboardOverview
+          transactions={transactions}
+          filteredTransactions={filteredTransactions}
+        />
+      )}
+
+      {/* Reports Section */}
+      {isClient && (
+        <ReportGenerator
           transactions={transactions}
           filteredTransactions={filteredTransactions}
         />
