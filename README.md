@@ -2,7 +2,8 @@
 
 A modern, responsive web application for tracking personal finances with dark mode support and advanced data visualization.
 
-> **Note:** Add a screenshot of your application here by saving it as `screenshot.png` in the public directory.
+![screencapture-finance-manager-v1-netlify-app-2025-04-08-14_53_48](https://github.com/user-attachments/assets/f716b22f-337a-47ee-a5ce-2fc1f8d39d38)
+
 
 ## 🚀 Features
 
