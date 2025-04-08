@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import DashboardOverview from "./DashboardOverview";
 import Header from "./Header";
 import Modal from "./Modal";
-import ReportGenerator from "./ReportGenerator";
-import Summary from "./Summary";
 import TransactionFilters from "./TransactionFilters";
 import TransactionForm from "./TransactionForm";
 import TransactionList from "./TransactionList";
@@ -26,44 +24,49 @@ export default function Dashboard() {
   >([]);
   const [isClient, setIsClient] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] =
+    useState<Transaction | null>(null);
 
-  // This effect runs once to indicate we're in the browser
   useEffect(() => {
     setIsClient(true);
+    // Load transactions from localStorage
+    const savedTransactions = localStorage.getItem("transactions");
+    if (savedTransactions) {
+      setTransactions(JSON.parse(savedTransactions));
+    }
   }, []);
 
-  // Only access localStorage when we're in the browser
-  useEffect(() => {
-    if (isClient) {
-      const savedTransactions = localStorage.getItem("transactions");
-      if (savedTransactions) {
-        setTransactions(JSON.parse(savedTransactions));
-      }
-    }
-  }, [isClient]);
-
-  // Initialize filtered transactions
-  useEffect(() => {
-    setFilteredTransactions(transactions);
-  }, [transactions]);
-
-  // Only save to localStorage when we're in the browser
+  // Save transactions to localStorage whenever they change
   useEffect(() => {
     if (isClient) {
       localStorage.setItem("transactions", JSON.stringify(transactions));
     }
-  }, [isClient, transactions]);
+  }, [transactions, isClient]);
 
-  const addTransaction = (transaction: Omit<Transaction, "id">) => {
-    const newTransaction = {
-      ...transaction,
-      id: Date.now().toString(),
-    };
-    setTransactions([...transactions, newTransaction]);
+  const handleFilteredTransactionsChange = (filtered: Transaction[]) => {
+    setFilteredTransactions(filtered);
   };
 
-  const deleteTransaction = (id: string) => {
-    setTransactions(transactions.filter((t) => t.id !== id));
+  const handleAddTransaction = (newTransaction: Transaction) => {
+    setTransactions((prev) => [...prev, newTransaction]);
+  };
+
+  const handleEditTransaction = (id: string) => {
+    const transactionToEdit = transactions.find((t) => t.id === id);
+    if (transactionToEdit) {
+      // Open the edit modal with the transaction data
+      setIsEditModalOpen(true);
+      setEditingTransaction(transactionToEdit);
+    }
+  };
+
+  const handleUpdateTransaction = (updatedTransaction: Transaction) => {
+    setTransactions((prev) =>
+      prev.map((t) => (t.id === updatedTransaction.id ? updatedTransaction : t))
+    );
+    setIsEditModalOpen(false);
+    setEditingTransaction(null);
   };
 
   // Calculate totals based on filtered transactions
@@ -75,80 +78,44 @@ export default function Dashboard() {
     .filter((t) => t.type === "expense")
     .reduce((sum, t) => sum + t.amount, 0);
 
-  const handleFilteredTransactionsChange = (filtered: Transaction[]) => {
-    setFilteredTransactions(filtered);
+  const deleteTransaction = (id: string) => {
+    setTransactions(transactions.filter((t) => t.id !== id));
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-      <Header />
+    <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
+      <Header
+        onAddTransaction={handleAddTransaction}
+        transactions={transactions}
+        filteredTransactions={filteredTransactions}
+      />
 
       {/* Filters Section */}
       {isClient && (
-        <TransactionFilters
-          transactions={transactions}
-          onFilteredTransactionsChange={handleFilteredTransactionsChange}
-        />
+        <div className="animate-fade-in">
+          <TransactionFilters
+            transactions={transactions}
+            onFilteredTransactionsChange={handleFilteredTransactionsChange}
+          />
+        </div>
       )}
 
       {/* Dashboard Overview Section */}
       {isClient && (
-        <DashboardOverview
-          transactions={transactions}
-          filteredTransactions={filteredTransactions}
-        />
+        <div className="animate-fade-in">
+          <DashboardOverview
+            transactions={transactions}
+            filteredTransactions={filteredTransactions}
+          />
+        </div>
       )}
 
-      {/* Add a button to open the report modal */}
-      <button
-        onClick={() => setIsReportModalOpen(true)}
-        className="btn-accent flex items-center gap-2 mb-8"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="w-5 h-5"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
-          />
-        </svg>
-        Download PDF Reports
-      </button>
-
-      {/* Report Generator Modal */}
-      <Modal
-        isOpen={isReportModalOpen}
-        onClose={() => setIsReportModalOpen(false)}
-        title="Download PDF Reports"
-      >
-        <ReportGenerator
-          transactions={transactions}
-          filteredTransactions={filteredTransactions}
-          onClose={() => setIsReportModalOpen(false)}
-        />
-      </Modal>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="space-y-8">
-          <div className="card p-6 glass-effect">
-            <h2 className="heading-2 mb-6">Add Transaction</h2>
-            <TransactionForm onSubmit={addTransaction} />
-          </div>
-
-          <Summary income={totalIncome} expenses={totalExpenses} />
-        </div>
-
-        <div className="card p-6 glass-effect">
+        <div className="card p-6 glass-effect hover:shadow-xl transition-all duration-300">
           <div className="flex items-center justify-between mb-6">
             <h2 className="heading-2">Transaction History</h2>
             {filteredTransactions.length > 0 && (
-              <span className="badge badge-primary">
+              <span className="badge badge-primary animate-pulse">
                 {filteredTransactions.length}{" "}
                 {filteredTransactions.length === 1
                   ? "transaction"
@@ -159,9 +126,27 @@ export default function Dashboard() {
           <TransactionList
             transactions={filteredTransactions}
             onDelete={deleteTransaction}
+            onEdit={handleEditTransaction}
           />
         </div>
       </div>
+
+      {/* Edit Transaction Modal */}
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditingTransaction(null);
+        }}
+        title="Edit Transaction"
+      >
+        {editingTransaction && (
+          <TransactionForm
+            onSubmit={handleUpdateTransaction}
+            initialData={editingTransaction}
+          />
+        )}
+      </Modal>
     </div>
   );
 }

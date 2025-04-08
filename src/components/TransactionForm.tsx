@@ -1,160 +1,175 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { Transaction } from "./Dashboard";
 
-type TransactionFormProps = {
-  onSubmit: (transaction: Omit<Transaction, "id">) => void;
-};
+interface TransactionFormProps {
+  onSubmit: (transaction: Transaction) => void;
+  initialData?: Transaction;
+}
 
 const categories = [
-  "Housing",
-  "Transportation",
+  "Salary",
+  "Freelance",
+  "Investments",
+  "Shopping",
   "Food",
-  "Utilities",
-  "Insurance",
-  "Healthcare",
-  "Savings",
-  "Personal",
+  "Transportation",
   "Entertainment",
+  "Utilities",
   "Other",
 ];
 
-export default function TransactionForm({ onSubmit }: TransactionFormProps) {
+export default function TransactionForm({
+  onSubmit,
+  initialData,
+}: TransactionFormProps) {
   const [formData, setFormData] = useState({
-    description: "",
-    amount: "",
-    type: "expense",
-    category: "Other",
-    date: "",
+    id: initialData?.id || Date.now().toString(),
+    description: initialData?.description || "",
+    amount: initialData?.amount || 0,
+    type: initialData?.type || "expense",
+    category: initialData?.category || categories[0],
+    date: initialData?.date || new Date().toISOString().split("T")[0],
   });
-
-  // Initialize the date safely on the client side
-  useEffect(() => {
-    setFormData((prev) => ({
-      ...prev,
-      date: new Date().toISOString().split("T")[0],
-    }));
-  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
-      ...formData,
-      amount: parseFloat(formData.amount),
-      type: formData.type as "income" | "expense",
-    });
-    setFormData({
-      description: "",
-      amount: "",
-      type: "expense",
-      category: "Other",
-      date: new Date().toISOString().split("T")[0],
-    });
+    onSubmit(formData);
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-          </label>
-          <input
-            type="text"
-            required
-            value={formData.description}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
-            className="input-field"
-            placeholder="Enter description"
-          />
-        </div>
+      <div>
+        <label className="block text-sm font-medium text-[rgb(var(--foreground))] mb-2">
+          Description
+        </label>
+        <input
+          type="text"
+          value={formData.description}
+          onChange={(e) =>
+            setFormData({ ...formData, description: e.target.value })
+          }
+          className="input-field"
+          placeholder="Enter description"
+          required
+        />
+      </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Amount
-          </label>
-          <input
-            type="number"
-            required
-            min="0"
-            step="0.01"
-            value={formData.amount}
-            onChange={(e) =>
-              setFormData({ ...formData, amount: e.target.value })
-            }
-            className="input-field"
-            placeholder="0.00"
-          />
-        </div>
+      <div>
+        <label className="block text-sm font-medium text-[rgb(var(--foreground))] mb-2">
+          Amount
+        </label>
+        <input
+          type="number"
+          value={formData.amount}
+          onChange={(e) =>
+            setFormData({ ...formData, amount: parseFloat(e.target.value) })
+          }
+          className="input-field"
+          placeholder="Enter amount"
+          min="0"
+          step="0.01"
+          required
+        />
+      </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Type
-          </label>
-          <div className="flex space-x-2">
-            <button
-              type="button"
-              onClick={() => setFormData({ ...formData, type: "expense" })}
-              className={`flex-1 py-2 px-4 rounded-lg border transition-all duration-200 ${
-                formData.type === "expense"
-                  ? "bg-red-100 border-red-500 text-red-700"
-                  : "border-gray-200 text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              Expense
-            </button>
-            <button
-              type="button"
-              onClick={() => setFormData({ ...formData, type: "income" })}
-              className={`flex-1 py-2 px-4 rounded-lg border transition-all duration-200 ${
-                formData.type === "income"
-                  ? "bg-green-100 border-green-500 text-green-700"
-                  : "border-gray-200 text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              Income
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Category
-          </label>
-          <select
-            value={formData.category}
-            onChange={(e) =>
-              setFormData({ ...formData, category: e.target.value })
-            }
-            className="input-field"
+      <div>
+        <label className="block text-sm font-medium text-[rgb(var(--foreground))] mb-2">
+          Type
+        </label>
+        <div className="flex space-x-3">
+          <button
+            type="button"
+            onClick={() => setFormData({ ...formData, type: "expense" })}
+            className={`flex-1 py-3 px-4 rounded-lg border transition-all duration-300 ${
+              formData.type === "expense"
+                ? "bg-[rgb(var(--error))]/10 border-[rgb(var(--error))] text-[rgb(var(--error))] shadow-md"
+                : "border-[rgb(var(--muted))] text-[rgb(var(--foreground))] hover:bg-[rgb(var(--muted))]/20"
+            }`}
           >
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Date
-          </label>
-          <input
-            type="date"
-            required
-            value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-            className="input-field"
-          />
+            <div className="flex items-center justify-center gap-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-5 h-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 4.5v15m0 0l6.75-6.75M12 19.5l-6.75-6.75"
+                />
+              </svg>
+              Expense
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={() => setFormData({ ...formData, type: "income" })}
+            className={`flex-1 py-3 px-4 rounded-lg border transition-all duration-300 ${
+              formData.type === "income"
+                ? "bg-[rgb(var(--success))]/10 border-[rgb(var(--success))] text-[rgb(var(--success))] shadow-md"
+                : "border-[rgb(var(--muted))] text-[rgb(var(--foreground))] hover:bg-[rgb(var(--muted))]/20"
+            }`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-5 h-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 19.5v-15m0 0l-6.75 6.75M12 4.5l6.75 6.75"
+                />
+              </svg>
+              Income
+            </div>
+          </button>
         </div>
       </div>
 
+      <div>
+        <label className="block text-sm font-medium text-[rgb(var(--foreground))] mb-2">
+          Category
+        </label>
+        <select
+          value={formData.category}
+          onChange={(e) =>
+            setFormData({ ...formData, category: e.target.value })
+          }
+          className="input-field focus:ring-2 focus:ring-[rgb(var(--primary))] focus:border-transparent transition-all duration-300"
+        >
+          {categories.map((category) => (
+            <option key={category} value={category}>
+              {category}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-[rgb(var(--foreground))] mb-2">
+          Date
+        </label>
+        <input
+          type="date"
+          value={formData.date}
+          onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+          className="input-field"
+          required
+        />
+      </div>
+
       <button type="submit" className="btn-primary">
-        Add Transaction
+        {initialData ? "Update Transaction" : "Add Transaction"}
       </button>
     </form>
   );

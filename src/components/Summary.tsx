@@ -18,20 +18,33 @@ export default function Summary({ income, expenses }: SummaryProps) {
   if (!mounted) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        Loading summary...
+        <div className="card p-6 glass-effect animate-pulse">
+          <div className="h-4 bg-[rgb(var(--muted))]/20 rounded w-1/2 mb-4"></div>
+          <div className="h-8 bg-[rgb(var(--muted))]/20 rounded w-3/4"></div>
+        </div>
+        <div className="card p-6 glass-effect animate-pulse">
+          <div className="h-4 bg-[rgb(var(--muted))]/20 rounded w-1/2 mb-4"></div>
+          <div className="h-8 bg-[rgb(var(--muted))]/20 rounded w-3/4"></div>
+        </div>
+        <div className="card p-6 glass-effect animate-pulse">
+          <div className="h-4 bg-[rgb(var(--muted))]/20 rounded w-1/2 mb-4"></div>
+          <div className="h-8 bg-[rgb(var(--muted))]/20 rounded w-3/4"></div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div className="card p-6">
+      <div className="card p-6 glass-effect hover:shadow-lg transition-all duration-300">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-gray-500">Total Income</h3>
-          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+          <h3 className="text-sm font-medium text-[rgb(var(--muted-foreground))]">
+            Total Income
+          </h3>
+          <div className="w-12 h-12 rounded-full bg-[rgb(var(--success))]/10 flex items-center justify-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-green-600"
+              className="h-6 w-6 text-[rgb(var(--success))]"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -45,18 +58,20 @@ export default function Summary({ income, expenses }: SummaryProps) {
             </svg>
           </div>
         </div>
-        <p className="text-2xl font-bold text-green-600">
+        <p className="text-3xl font-bold text-[rgb(var(--success))]">
           ${income.toFixed(2)}
         </p>
       </div>
 
-      <div className="card p-6">
+      <div className="card p-6 glass-effect hover:shadow-lg transition-all duration-300">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-gray-500">Total Expenses</h3>
-          <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+          <h3 className="text-sm font-medium text-[rgb(var(--muted-foreground))]">
+            Total Expenses
+          </h3>
+          <div className="w-12 h-12 rounded-full bg-[rgb(var(--error))]/10 flex items-center justify-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-red-600"
+              className="h-6 w-6 text-[rgb(var(--error))]"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -70,23 +85,29 @@ export default function Summary({ income, expenses }: SummaryProps) {
             </svg>
           </div>
         </div>
-        <p className="text-2xl font-bold text-red-600">
+        <p className="text-3xl font-bold text-[rgb(var(--error))]">
           ${expenses.toFixed(2)}
         </p>
       </div>
 
-      <div className="card p-6">
+      <div className="card p-6 glass-effect hover:shadow-lg transition-all duration-300">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-gray-500">Balance</h3>
+          <h3 className="text-sm font-medium text-[rgb(var(--muted-foreground))]">
+            Balance
+          </h3>
           <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              balance >= 0 ? "bg-green-100" : "bg-red-100"
+            className={`w-12 h-12 rounded-full flex items-center justify-center ${
+              balance >= 0
+                ? "bg-[rgb(var(--success))]/10"
+                : "bg-[rgb(var(--error))]/10"
             }`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className={`h-5 w-5 ${
-                balance >= 0 ? "text-green-600" : "text-red-600"
+              className={`h-6 w-6 ${
+                balance >= 0
+                  ? "text-[rgb(var(--success))]"
+                  : "text-[rgb(var(--error))]"
               }`}
               fill="none"
               viewBox="0 0 24 24"
@@ -102,8 +123,10 @@ export default function Summary({ income, expenses }: SummaryProps) {
           </div>
         </div>
         <p
-          className={`text-2xl font-bold ${
-            balance >= 0 ? "text-green-600" : "text-red-600"
+          className={`text-3xl font-bold ${
+            balance >= 0
+              ? "text-[rgb(var(--success))]"
+              : "text-[rgb(var(--error))]"
           }`}
         >
           ${balance.toFixed(2)}
