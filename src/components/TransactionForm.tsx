@@ -30,25 +30,12 @@ export default function TransactionForm({
     amount: initialData?.amount || 0,
     type: initialData?.type || "expense",
     category: initialData?.category || categories[0],
-    date:
-      initialData?.date ||
-      (() => {
-        const now = new Date();
-        // Convert to Bangladeshi time (UTC+6)
-        const bangladeshTime = new Date(now.getTime() + 6 * 60 * 60 * 1000);
-        return bangladeshTime.toISOString();
-      })(),
+    date: initialData?.date || new Date().toISOString().split("T")[0],
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Update the date to current Bangladeshi time before submitting
-    const now = new Date();
-    const bangladeshTime = new Date(now.getTime() + 6 * 60 * 60 * 1000);
-    onSubmit({
-      ...formData,
-      date: bangladeshTime.toISOString(),
-    });
+    onSubmit(formData);
   };
 
   return (
@@ -166,6 +153,19 @@ export default function TransactionForm({
             </option>
           ))}
         </select>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-[rgb(var(--foreground))] mb-2">
+          Date
+        </label>
+        <input
+          type="date"
+          value={formData.date}
+          onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+          className="input-field"
+          required
+        />
       </div>
 
       <button type="submit" className="btn-primary">
