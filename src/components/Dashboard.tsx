@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import DashboardOverview from "./DashboardOverview";
+import Footer from "./Footer";
 import Header from "./Header";
 import Modal from "./Modal";
 import TransactionFilters from "./TransactionFilters";
@@ -577,6 +578,8 @@ export default function Dashboard() {
           </section>
         </div>
       </Modal>
+
+      <Footer />
     </div>
   );
 }
