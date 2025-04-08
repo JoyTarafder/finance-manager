@@ -140,14 +140,14 @@ export default function DashboardOverview({
                 {isFiltered ? "Filtered Income" : "Total Income"}
               </p>
               <p className="text-2xl font-bold text-[rgb(var(--primary))]">
-                ${(isFiltered ? filteredIncome : totalIncome).toFixed(2)}
+                ৳{(isFiltered ? filteredIncome : totalIncome).toFixed(2)}
               </p>
             </div>
           </div>
           {isFiltered && (
             <div className="mt-2 pt-3 border-t border-[rgb(var(--muted))]/10">
               <p className="text-sm text-[rgb(var(--muted-foreground))]">
-                {Math.round((filteredIncome / totalIncome) * 100)}% of total ($
+                {Math.round((filteredIncome / totalIncome) * 100)}% of total (৳
                 {totalIncome.toFixed(2)})
               </p>
             </div>
@@ -178,7 +178,7 @@ export default function DashboardOverview({
                 {isFiltered ? "Filtered Expenses" : "Total Expenses"}
               </p>
               <p className="text-2xl font-bold text-[rgb(var(--error))]">
-                ${(isFiltered ? filteredExpenses : totalExpenses).toFixed(2)}
+                ৳{(isFiltered ? filteredExpenses : totalExpenses).toFixed(2)}
               </p>
             </div>
           </div>
@@ -186,7 +186,7 @@ export default function DashboardOverview({
             <div className="mt-2 pt-3 border-t border-[rgb(var(--muted))]/10">
               <p className="text-sm text-[rgb(var(--muted-foreground))]">
                 {Math.round((filteredExpenses / totalExpenses) * 100)}% of total
-                (${totalExpenses.toFixed(2)})
+                (৳{totalExpenses.toFixed(2)})
               </p>
             </div>
           )}
@@ -222,7 +222,7 @@ export default function DashboardOverview({
                     : "text-[rgb(var(--error))]"
                 }`}
               >
-                ${(isFiltered ? filteredBalance : balance).toFixed(2)}
+                ৳{(isFiltered ? filteredBalance : balance).toFixed(2)}
               </p>
             </div>
           </div>
@@ -336,7 +336,7 @@ export default function DashboardOverview({
                         : "text-[rgb(var(--error))]"
                     }`}
                   >
-                    {transaction.type === "income" ? "+" : "-"}$
+                    {transaction.type === "income" ? "+" : "-"}+৳
                     {transaction.amount.toFixed(2)}
                   </span>
                 </div>
@@ -414,7 +414,7 @@ export default function DashboardOverview({
                         </span>
                       </div>
                       <span className="text-sm font-medium text-[rgb(var(--foreground))]">
-                        ${amount.toFixed(2)}
+                        ৳{amount.toFixed(2)}
                       </span>
                     </div>
                     <div className="relative h-2 w-full bg-[rgb(var(--muted))]/20 rounded-full overflow-hidden">

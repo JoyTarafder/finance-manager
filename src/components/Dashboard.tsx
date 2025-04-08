@@ -300,7 +300,16 @@ export default function Dashboard() {
                             {transaction.category}
                           </span>
                           <span className="text-xs text-[rgb(var(--muted-foreground))]">
-                            {new Date(transaction.date).toLocaleDateString()}
+                            {new Date(transaction.date).toLocaleString(
+                              "en-BD",
+                              {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )}
                           </span>
                         </div>
                       </div>
@@ -313,7 +322,7 @@ export default function Dashboard() {
                             : "text-[rgb(var(--error))]"
                         }`}
                       >
-                        {transaction.type === "income" ? "+" : "-"}$
+                        {transaction.type === "income" ? "+" : "-"}৳
                         {transaction.amount.toFixed(2)}
                       </span>
                       <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
