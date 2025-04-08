@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import DashboardOverview from "./DashboardOverview";
 import Header from "./Header";
+import Modal from "./Modal";
 import ReportGenerator from "./ReportGenerator";
 import Summary from "./Summary";
 import TransactionFilters from "./TransactionFilters";
@@ -24,6 +25,7 @@ export default function Dashboard() {
     Transaction[]
   >([]);
   const [isClient, setIsClient] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   // This effect runs once to indicate we're in the browser
   useEffect(() => {
@@ -97,13 +99,40 @@ export default function Dashboard() {
         />
       )}
 
-      {/* Reports Section */}
-      {isClient && (
+      {/* Add a button to open the report modal */}
+      <button
+        onClick={() => setIsReportModalOpen(true)}
+        className="btn-accent flex items-center gap-2 mb-8"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="currentColor"
+          className="w-5 h-5"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+          />
+        </svg>
+        Download PDF Reports
+      </button>
+
+      {/* Report Generator Modal */}
+      <Modal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        title="Download PDF Reports"
+      >
         <ReportGenerator
           transactions={transactions}
           filteredTransactions={filteredTransactions}
+          onClose={() => setIsReportModalOpen(false)}
         />
-      )}
+      </Modal>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-8">
