@@ -7,12 +7,16 @@ type TransactionListProps = {
   transactions: Transaction[];
   onDelete: (id: string) => void;
   onEdit: (id: string) => void;
+  onAddTransaction: () => void;
+  onDownloadPDF: () => void;
 };
 
 export default function TransactionList({
   transactions,
   onDelete,
   onEdit,
+  onAddTransaction,
+  onDownloadPDF,
 }: TransactionListProps) {
   const [mounted, setMounted] = useState(false);
 
@@ -50,6 +54,58 @@ export default function TransactionList({
 
   return (
     <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-[rgb(var(--foreground))]">
+            Transactions
+          </h2>
+          <span className="text-sm text-[rgb(var(--muted-foreground))]">
+            ({transactions.length})
+          </span>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button
+            onClick={onAddTransaction}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-[rgb(var(--primary))] text-white rounded-lg hover:bg-[rgb(var(--primary))]/90 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Add Transaction
+          </button>
+          <button
+            onClick={onDownloadPDF}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-[rgb(var(--muted))] text-[rgb(var(--foreground))] rounded-lg hover:bg-[rgb(var(--muted))]/80 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            Download PDF Reports
+          </button>
+        </div>
+      </div>
       {transactions.length === 0 ? (
         <div className="text-center py-12">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[rgb(var(--muted))]/20 mb-4">
@@ -80,11 +136,20 @@ export default function TransactionList({
           {transactions.map((transaction) => (
             <div
               key={transaction.id}
-              className="flex items-center justify-between p-4 rounded-xl glass-effect hover:shadow-lg transition-all duration-300"
+              className="sm:flex sm:flex-row sm:items-center justify-between p-4 rounded-xl glass-effect hover:shadow-lg transition-all duration-300 relative overflow-hidden group"
             >
-              <div className="flex items-center space-x-4">
+              {/* Mobile Background Gradient */}
+              <div
+                className={`absolute inset-0 opacity-10 sm:hidden ${
+                  transaction.type === "income"
+                    ? "bg-gradient-to-r from-[rgb(var(--success))] to-transparent"
+                    : "bg-gradient-to-r from-[rgb(var(--error))] to-transparent"
+                }`}
+              />
+
+              <div className="flex items-start space-x-4 mb-4 sm:mb-0">
                 <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                  className={`hidden sm:flex w-12 h-12 rounded-full items-center justify-center ${
                     transaction.type === "income"
                       ? "bg-[rgb(var(--success))]/10"
                       : "bg-[rgb(var(--error))]/10"
@@ -117,25 +182,30 @@ export default function TransactionList({
                     )}
                   </svg>
                 </div>
-                <div>
-                  <h3 className="font-medium text-[rgb(var(--foreground))]">
+                <div className="flex-1 pl-4 sm:pl-0">
+                  <h3 className="font-semibold text-[rgb(var(--foreground))] text-base mb-1">
                     {transaction.description}
                   </h3>
-                  <div className="text-sm text-[rgb(var(--muted-foreground))] mt-1">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[rgb(var(--muted))]/20 text-[rgb(var(--foreground))]">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                        transaction.type === "income"
+                          ? "bg-[rgb(var(--success))]/10 text-[rgb(var(--success))]"
+                          : "bg-[rgb(var(--error))]/10 text-[rgb(var(--error))]"
+                      }`}
+                    >
                       {transaction.category}
                     </span>
-                    <span className="mx-2">•</span>
-                    <span>
+                    <span className="text-xs text-[rgb(var(--muted-foreground))] opacity-75">
                       {new Date(transaction.date).toLocaleDateString()}
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center justify-between sm:justify-end gap-4 pl-4 sm:pl-0 mt-3 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-[rgb(var(--muted))]/10">
                 <span
-                  className={`font-medium text-xl ${
+                  className={`font-semibold text-lg sm:text-xl ${
                     transaction.type === "income"
                       ? "text-[rgb(var(--success))]"
                       : "text-[rgb(var(--error))]"
@@ -145,10 +215,10 @@ export default function TransactionList({
                   {transaction.amount.toFixed(2)}
                 </span>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                   <button
                     onClick={() => onEdit(transaction.id)}
-                    className="text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--primary))] p-2 rounded-full hover:bg-[rgb(var(--primary))]/10 transition-all duration-200 hover:scale-110"
+                    className="text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--primary))] p-2.5 rounded-full hover:bg-[rgb(var(--primary))]/10 transition-all duration-200 active:scale-95"
                     aria-label="Edit transaction"
                   >
                     <svg
@@ -169,7 +239,7 @@ export default function TransactionList({
 
                   <button
                     onClick={() => onDelete(transaction.id)}
-                    className="text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--error))] p-2 rounded-full hover:bg-[rgb(var(--error))]/10 transition-all duration-200 hover:scale-110"
+                    className="text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--error))] p-2.5 rounded-full hover:bg-[rgb(var(--error))]/10 transition-all duration-200 active:scale-95"
                     aria-label="Delete transaction"
                   >
                     <svg

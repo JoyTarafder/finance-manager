@@ -22,7 +22,8 @@ export default function Footer() {
             </svg>
           </div>
           <p className="text-sm text-[rgb(var(--muted-foreground))] text-center">
-            © {new Date().getFullYear()} Finance Manager. All rights reserved. Developed by{" "}
+            © {new Date().getFullYear()} Finance Manager. All rights reserved.
+            Developed by{" "}
             <a
               href="https://my-protfolio-jt.vercel.app/"
               target="_blank"
