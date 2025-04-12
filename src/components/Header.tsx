@@ -52,24 +52,24 @@ export default function Header({
               <h1 className="text-lg font-bold text-[rgb(var(--foreground))]">
                 Finance Manager
                 <span className="text-xs font-normal px-2 py-1 rounded-full bg-[rgb(var(--primary))]/10 text-[rgb(var(--primary))]">
-                Beta
-              </span>
+                  Beta
+                </span>
               </h1>
               <p className="text-xs text-[rgb(var(--muted-foreground))] flex items-center justify-center gap-1">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-4 h-4"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-4 h-4"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
                 Track your income and expenses
               </p>
             </div>
